@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "../styles/app-styles.css";
 import '../styles/mobile-simple.css';
@@ -81,6 +82,7 @@ export default function RootLayout({
         </footer>
         
         {/* Add mobile handler script */}
+        <Analytics />
 
       </body>
     </html>
