@@ -122,7 +122,9 @@ const MultiImageCanvas = forwardRef(({ quotes = [], images = [], aspectRatio = '
           if (frame.imageUrl) {
             // Use regular HTMLImageElement instead of Next.js Image component
             const img = new window.Image();
-            img.src = frame.imageUrl;
+            // Use the image proxy to avoid CORS issues
+            img.crossOrigin = 'anonymous';
+            img.src = `/api/v1/images/proxy?url=${encodeURIComponent(frame.imageUrl)}`;
             await new Promise(resolve => {
               img.onload = resolve;
               img.onerror = resolve; // Continue even if image fails to load
@@ -247,10 +249,11 @@ const MultiImageCanvas = forwardRef(({ quotes = [], images = [], aspectRatio = '
           {/* Current frame preview */}
           {currentFrame.imageUrl && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              {/* Use regular img tag for compatibility */}
+              {/* Use regular img tag with proxy for compatibility */}
               <img 
-                src={currentFrame.imageUrl} 
+                src={`/api/v1/images/proxy?url=${encodeURIComponent(currentFrame.imageUrl)}`} 
                 alt={`Frame ${currentFrameIndex + 1}`}
+                crossOrigin="anonymous"
                 style={{ 
                   width: '100%', 
                   height: '100%', 
