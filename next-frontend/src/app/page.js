@@ -202,6 +202,41 @@ export default function Page() {
             fontWeight: 500,
             fontStyle: 'italic'
           }}>Every quote has a story. We help you say it.</span>
+          
+          <div style={{
+            marginTop: '12px',
+            display: 'flex',
+            gap: '16px'
+          }}>
+            <a 
+              href="/pro/gif-creator" 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontWeight: 600,
+                fontSize: '14px',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <span>✨</span>
+              <span>Pro GIF Creator</span>
+              <span style={{
+                background: '#f0f4ff',
+                color: '#4f46e5',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>NEW</span>
+            </a>
+          </div>
         </div>
       </header>
 
