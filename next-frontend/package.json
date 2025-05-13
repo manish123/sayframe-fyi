@@ -9,11 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.4",
-    "axios": "^1.9.0",
-    "next": "15.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
@@ -21,9 +16,15 @@
     "@mantine/core": "^8.0.0",
     "@mantine/hooks": "^8.0.0",
     "@mui/material": "^7.1.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "@vercel/analytics": "^1.5.0",
+    "axios": "^1.9.0",
     "fabric": "^5.3.1",
+    "next": "15.3.2",
+    "react": "^19.0.0",
     "react-chatbot-kit": "^2.2.2",
-    "react-color": "^2.19.3"
+    "react-color": "^2.19.3",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
