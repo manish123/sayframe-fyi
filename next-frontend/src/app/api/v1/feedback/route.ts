@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
+// The Vercel Blob token is automatically picked up from the environment variable SF_READ_WRITE_TOKEN
+// No need to explicitly access it as the Vercel Blob SDK will use it automatically
+
 // Environment variable for Vercel Blob
 // Make sure to add SF_READ_WRITE_TOKEN to your Vercel environment variables
 // SF_READ_WRITE_TOKEN="vercel_blob_rw_I0m0AiT2Tei4XAOV_Ahw4xttiszrMm5TYTiIh6Zwx0p12Q9"
@@ -23,13 +26,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       timestamp: new Date().toISOString()
     };
 
+    // The Vercel Blob SDK will automatically check for the token
+    
     try {
       // Store directly in Vercel Blob Storage
       // Each feedback is stored as a separate file with timestamp in the name
       const fileName = `feedback-${Date.now()}.json`;
       const feedbackJson = JSON.stringify(newFeedback);
       
-      // Use the put function from Vercel Blob
+      // Use the put function from Vercel Blob - it will automatically use the SF_READ_WRITE_TOKEN env variable
       const { url } = await put(`feedback/${fileName}`, feedbackJson, {
         contentType: 'application/json',
         access: 'public', // Make it publicly accessible
