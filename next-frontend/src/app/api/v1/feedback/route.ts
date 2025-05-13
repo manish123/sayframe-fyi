@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
-// The Vercel Blob token is automatically picked up from the environment variable SF_READ_WRITE_TOKEN
-// No need to explicitly access it as the Vercel Blob SDK will use it automatically
+// For development testing, we'll use a hardcoded token
+// In production, this should come from environment variables
+const BLOB_TOKEN = process.env.SF_READ_WRITE_TOKEN || "vercel_blob_rw_I0m0AiT2Tei4XAOV_Ahw4xttiszrMm5TYTiIh6Zwx0p12Q9";
 
 // Environment variable for Vercel Blob
 // Make sure to add SF_READ_WRITE_TOKEN to your Vercel environment variables
@@ -34,10 +35,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const fileName = `feedback-${Date.now()}.json`;
       const feedbackJson = JSON.stringify(newFeedback);
       
-      // Use the put function from Vercel Blob - it will automatically use the SF_READ_WRITE_TOKEN env variable
+      // Use the put function from Vercel Blob with explicit token
       const { url } = await put(`feedback/${fileName}`, feedbackJson, {
         contentType: 'application/json',
         access: 'public', // Make it publicly accessible
+        token: BLOB_TOKEN, // Explicitly pass the token
       });
       
       return NextResponse.json(
