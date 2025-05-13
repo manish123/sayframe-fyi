@@ -39,7 +39,8 @@ export const ImageSearch = ({ searchTerm, onSearch, images, onImageSelect }) => 
 
   return (
     <div className="form-group">
-      <h3 className="feature-title"><span style={{ fontSize: '16px' }}>🔍</span> Search Images</h3>
+      <h3 className="feature-title"><span style={{ fontSize: '16px' }}>🔍</span> Search Images & Select One</h3>
+      <p className="mobile-instruction">Type a keyword and tap search to find background images</p>
       
       <form 
         onSubmit={handleSearch}

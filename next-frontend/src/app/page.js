@@ -12,6 +12,68 @@ import HelpBox from '../components/HelpBox';
 import FeedbackCard from '../components/FeedbackCard';
 // No longer using App.css as styles are in app-styles.css
 
+// Desktop Recommendation Notice component
+function DesktopRecommendationNotice() {
+  const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+    setIsMobile(window.innerWidth <= 768);
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  if (!isMounted || !isMobile) return null;
+  
+  return (
+    <div className="mobile-desktop-banner">
+      <div className="mobile-desktop-banner-content">
+        <span className="mobile-desktop-banner-icon">💻</span>
+        <span className="mobile-desktop-banner-text">
+          StayFrame works best on desktop devices for the full experience
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Mobile Export Buttons component
+function MobileExportButtons({ handleExportImage, handleCopyToClipboard }) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+    setIsMobile(window.innerWidth <= 768);
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  if (!isMounted || !isMobile) return null;
+  
+  return (
+    <div className="mobile-export-buttons">
+      <button onClick={handleExportImage}>
+        <span>🖼️</span> Export Image
+      </button>
+      <button onClick={handleCopyToClipboard}>
+        <span>📋</span> Copy to Clipboard
+      </button>
+    </div>
+  );
+}
+
 export default function Page() {
   const [aspectRatio, setAspectRatio] = useState('twitter-post');
   const [themes, setThemes] = useState([]);
@@ -94,6 +156,9 @@ export default function Page() {
 
   return (
     <>
+      {/* Desktop Recommendation Notice */}
+      <DesktopRecommendationNotice />
+      
       <header style={{
         background: '#ffffff',
         padding: '16px 0',
@@ -167,7 +232,7 @@ export default function Page() {
         minHeight: 'calc(100vh - 120px)',
         paddingBottom: '32px'
       }}>
-        <div style={{
+        <div className="app-container" style={{
           maxWidth: '100%',
           margin: '0 auto',
           display: 'flex',
@@ -268,11 +333,46 @@ export default function Page() {
             </div>
 
             {/* Canvas */}
-            <FabricCanvas 
-              quote={selectedQuote} 
-              images={selectedImage ? [selectedImage] : []} 
-              aspectRatio={aspectRatio}
-              ref={canvasRef}
+            <div className="canvas-wrapper">
+              <FabricCanvas 
+                quote={selectedQuote} 
+                images={selectedImage ? [selectedImage] : []} 
+                aspectRatio={aspectRatio}
+                ref={canvasRef}
+              />
+            </div>
+            
+            {/* Mobile Export Buttons */}
+            <MobileExportButtons 
+              handleExportImage={async () => {
+                if (canvasRef.current && canvasRef.current.exportImage) {
+                  try {
+                    const dataURL = await canvasRef.current.exportImage();
+                    if (dataURL) {
+                      const link = document.createElement('a');
+                      link.download = 'social-post.png';
+                      link.href = dataURL;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }
+                  } catch (error) {
+                    console.error('Export error:', error);
+                    alert('Export failed. Please try again.');
+                  }
+                }
+              }}
+              handleCopyToClipboard={async () => {
+                if (canvasRef.current && canvasRef.current.copyToClipboard) {
+                  try {
+                    await canvasRef.current.copyToClipboard();
+                    alert('Image copied to clipboard!');
+                  } catch (error) {
+                    console.error('Copy to clipboard error:', error);
+                    alert('Copy to clipboard failed. Please try again.');
+                  }
+                }
+              }}
             />
             
             {/* Export Controls */}

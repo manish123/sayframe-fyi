@@ -1,0 +1,129 @@
+/* Desktop notice styles */
+.desktop-notice-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-notice-container {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .desktop-notice {
+    max-width: 500px;
+    background-color: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+  }
+  
+  .desktop-notice-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--color-primary);
+  }
+  
+  .desktop-notice-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  .desktop-notice-text {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: var(--color-text);
+  }
+  
+  .desktop-notice-button {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+  }
+  
+  .desktop-notice-button:hover {
+    background: var(--color-primary-dark);
+  }
+  
+  /* Basic responsive adjustments for the main layout */
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .left-sidebar, 
+  .main-content {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+  
+  /* Hide right sidebar on mobile */
+  .right-sidebar {
+    display: none !important;
+  }
+  
+  /* Focus on core functionality for mobile users */
+  .mobile-core-only {
+    display: block;
+  }
+  
+  /* Add some extra spacing and padding for mobile */
+  .main-content {
+    padding: 16px !important;
+  }
+  
+  /* Make canvas wrapper responsive */
+  .canvas-wrapper {
+    width: 100% !important;
+    overflow: hidden;
+  }
+  
+  /* Make form controls full width on mobile */
+  .form-select {
+    width: 100% !important;
+  }
+  
+  /* Make export buttons more prominent on mobile */
+  .mobile-export-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    width: 100%;
+  }
+  
+  .mobile-export-buttons button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .desktop-notice-title {
+    font-size: 20px;
+  }
+  
+  .desktop-notice-text {
+    font-size: 14px;
+  }
+}

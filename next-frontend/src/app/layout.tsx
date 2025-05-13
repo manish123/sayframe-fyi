@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import "../styles/app-styles.css";
+import '../styles/mobile-simple.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,9 @@ const playfairDisplay = Playfair_Display({
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  minimumScale: 1,
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
@@ -76,6 +79,9 @@ export default function RootLayout({
             <p>Create beautiful social media posts in seconds</p>
           </div>
         </footer>
+        
+        {/* Add mobile handler script */}
+
       </body>
     </html>
   );
