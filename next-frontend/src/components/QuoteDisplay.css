@@ -1,0 +1,76 @@
+.quotes-container {
+  margin-top: var(--spacing-md);
+}
+
+.quotes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.quotes-header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-large);
+}
+
+.quotes-count {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--color-background-secondary);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+}
+
+.quote-item {
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border: 1px solid var(--color-border-light);
+}
+
+.quote-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-light);
+}
+
+.quote-text {
+  font-style: italic;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-medium);
+  line-height: 1.6;
+  font-family: var(--font-heading);
+}
+
+.quote-author {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-align: right;
+  font-size: var(--font-size-small);
+}
+
+.loading-message, .error-message, .no-quotes-message {
+  text-align: center;
+  padding: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius);
+  margin: var(--spacing-md) 0;
+}
+
+.error-message {
+  color: #d32f2f;
+}
