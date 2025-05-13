@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
-interface FeedbackItem {
-  id: string;
-  feedback: string;
-  timestamp: string;
-}
-
 // Environment variable for Vercel Blob
 // Make sure to add SF_READ_WRITE_TOKEN to your Vercel environment variables
 // SF_READ_WRITE_TOKEN="vercel_blob_rw_I0m0AiT2Tei4XAOV_Ahw4xttiszrMm5TYTiIh6Zwx0p12Q9"

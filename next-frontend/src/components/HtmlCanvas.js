@@ -1,5 +1,6 @@
 "use client";
 import React, { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 // Consistent styling for the entire application
 const appStyles = {
@@ -816,12 +817,13 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                   Loading image...
                 </div>
               )}
-              {/* Use regular img tag for better compatibility with canvas export */}
-              <img 
+              {/* Use Next.js Image component for better performance */}
+              <Image 
                 src={imageUrl} 
                 alt="Background" 
                 onLoad={handleImageLoad}
                 onError={handleImageError}
+                fill
                 style={{ 
                   position: 'absolute',
                   width: '100%',
