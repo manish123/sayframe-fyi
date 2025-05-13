@@ -358,6 +358,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
       
       try {
         // Create a new canvas element for export
+        // Use document.createElement explicitly to avoid minification issues
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const { width, height } = canvasSize;
@@ -374,7 +375,8 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
         if (imageUrl) {
           try {
             // Create a new image with crossOrigin set
-            const img = new Image();
+            // Use window.Image explicitly to avoid minification issues
+            const img = new (window.Image || Image)();
             img.crossOrigin = 'anonymous';
             
             // Wait for the image to load
@@ -489,11 +491,14 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
         
         // Try to use clipboard API if available
         if (navigator.clipboard && window.ClipboardItem) {
-          const item = new window.ClipboardItem({ 'image/png': blob });
+          // Use window.ClipboardItem explicitly to avoid minification issues
+          const ClipboardItemConstructor = window.ClipboardItem;
+          const item = new ClipboardItemConstructor({ 'image/png': blob });
           await navigator.clipboard.write([item]);
           console.log('[HtmlCanvas] Image copied to clipboard');
         } else {
           // Fallback for browsers without clipboard API
+          // Use document.createElement directly to avoid minification issues
           const img = document.createElement('img');
           img.src = dataURL;
           document.body.appendChild(img);
