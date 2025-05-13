@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put, list, del } from '@vercel/blob';
+import { put } from '@vercel/blob';
 
 interface FeedbackItem {
   id: string;
@@ -7,29 +7,9 @@ interface FeedbackItem {
   timestamp: string;
 }
 
-// Helper function to get existing feedback from Blob Storage
-async function getExistingFeedback(): Promise<FeedbackItem[]> {
-  try {
-    // List all blobs with the 'feedback' prefix
-    const blobs = await list({ prefix: 'feedback/' });
-    
-    // If we find a feedback.json blob, return its content
-    if (blobs.blobs.length > 0) {
-      const feedbackBlob = blobs.blobs.find(blob => blob.pathname === 'feedback/feedback.json');
-      if (feedbackBlob) {
-        const response = await fetch(feedbackBlob.url);
-        const data = await response.json();
-        return data;
-      }
-    }
-    
-    // If no feedback blob exists yet, return an empty array
-    return [];
-  } catch (error) {
-    console.error('Error fetching existing feedback:', error);
-    return [];
-  }
-}
+// Environment variable for Vercel Blob
+// Make sure to add SF_READ_WRITE_TOKEN to your Vercel environment variables
+// SF_READ_WRITE_TOKEN="vercel_blob_rw_I0m0AiT2Tei4XAOV_Ahw4xttiszrMm5TYTiIh6Zwx0p12Q9"
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -50,40 +30,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     try {
-      // Get existing feedback
-      const existingFeedback = await getExistingFeedback();
+      // Store directly in Vercel Blob Storage
+      // Each feedback is stored as a separate file with timestamp in the name
+      const fileName = `feedback-${Date.now()}.json`;
+      const feedbackJson = JSON.stringify(newFeedback);
       
-      // Add new feedback
-      const updatedFeedback = [...existingFeedback, newFeedback];
-      
-      // Convert to JSON string
-      const feedbackJson = JSON.stringify(updatedFeedback, null, 2);
-      
-      // Store in Vercel Blob Storage
-      const blob = await put('feedback/feedback.json', feedbackJson, {
+      // Use the put function from Vercel Blob
+      const { url } = await put(`feedback/${fileName}`, feedbackJson, {
         contentType: 'application/json',
-        access: 'public', // Make it publicly accessible for easy retrieval
+        access: 'public', // Make it publicly accessible
       });
       
       return NextResponse.json(
         { 
           success: true, 
           message: 'Feedback saved successfully to Blob Storage',
-          url: blob.url
+          url: url
         },
         { status: 200 }
       );
-    } catch (blobError) {
+    } catch (error) {
+      const blobError = error as Error;
       console.error('Error storing feedback in Blob Storage:', blobError);
       
-      // Fall back to just logging the feedback if Blob Storage fails
+      // Fall back to just logging the feedback
       console.log('Received feedback (not stored):', newFeedback);
       
       return NextResponse.json(
         { 
           success: true, 
-          message: 'Feedback received but could not be stored. Please check Vercel Blob Storage configuration.',
-          fallback: true
+          message: 'Feedback received but could not be stored in Blob Storage.',
+          error: blobError.message
         },
         { status: 200 }
       );
@@ -97,16 +74,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// GET endpoint to retrieve all feedback
-export async function GET(): Promise<NextResponse> {
-  try {
-    const feedback = await getExistingFeedback();
-    return NextResponse.json(feedback, { status: 200 });
-  } catch (error) {
-    console.error('Error retrieving feedback:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve feedback' },
-      { status: 500 }
-    );
-  }
-}
+// Note: To implement a GET endpoint to retrieve all feedback,
+// you would need to use the list function from Vercel Blob
+// This is simplified for now
