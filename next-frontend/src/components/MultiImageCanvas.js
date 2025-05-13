@@ -1,6 +1,5 @@
 "use client";
 import React, { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import GIF from 'gif.js';
 
 // MultiImageCanvas component for creating GIFs with multiple images and quotes
@@ -121,7 +120,8 @@ const MultiImageCanvas = forwardRef(({ quotes = [], images = [], aspectRatio = '
           
           // Draw image if available
           if (frame.imageUrl) {
-            const img = new Image();
+            // Use regular HTMLImageElement instead of Next.js Image component
+            const img = new window.Image();
             img.src = frame.imageUrl;
             await new Promise(resolve => {
               img.onload = resolve;
@@ -247,11 +247,18 @@ const MultiImageCanvas = forwardRef(({ quotes = [], images = [], aspectRatio = '
           {/* Current frame preview */}
           {currentFrame.imageUrl && (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <Image 
+              {/* Use regular img tag for compatibility */}
+              <img 
                 src={currentFrame.imageUrl} 
                 alt={`Frame ${currentFrameIndex + 1}`}
-                fill
-                style={{ objectFit: 'cover' }}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
+                }}
               />
               
               {/* Quote overlay */}
