@@ -4,7 +4,7 @@ import React from 'react';
 const HelpBox = () => (
   <div className="sidebar-card">
     <h3 className="feature-title">
-      <span style={{ fontSize: '16px' }}>📝</span> How to use SayFrame
+      <span style={{ fontSize: '16px' }}>📝</span> How to use StayFrame
     </h3>
     <ol style={{ paddingLeft: '18px', margin: 0, lineHeight: '1.5' }}>
       <li>Choose a <b>theme</b> from the dropdown menu to explore related content</li>

@@ -463,7 +463,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
         ctx.fillStyle = '#333C4D';
-        ctx.fillText('powered by sayframe.fyi', width - 14, height - 14);
+        ctx.fillText('powered by stayframe.fyi', width - 14, height - 14);
         
         const dataURL = canvas.toDataURL('image/png');
         resolve(dataURL);
@@ -907,7 +907,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             fontFamily: 'Arial, sans-serif',
             textShadow: imageUrl ? '0px 0px 2px #fff' : 'none'
           }}>
-            powered by sayframe.fyi
+            powered by stayframe.fyi
           </div>
         </div>
         
@@ -926,7 +926,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             maxWidth: '80%',
             opacity: 0.85
           }}>
-            Start with a quote. Or upload your moment.<br/>Let SayFrame help you say it.
+            Start with a quote. Or upload your moment.<br/>Let StayFrame help you say it.
           </div>
         )}
       </div>

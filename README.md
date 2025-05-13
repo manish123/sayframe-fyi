@@ -1,4 +1,4 @@
-# SayFrame.fyi - Social Post Creator
+# StayFrame.fyi - Social Post Creator
 
 A modern web application that allows users to create beautiful social media posts with custom quotes and images. Perfect for content creators, marketers, and social media enthusiasts.
 

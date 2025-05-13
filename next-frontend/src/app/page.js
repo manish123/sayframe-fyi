@@ -123,7 +123,7 @@ export default function Page() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               letterSpacing: '-0.5px'
-            }}>SayFrame</h1>
+            }}>StayFrame</h1>
             <span style={{
               color: 'var(--color-text-secondary)',
               fontSize: '16px',
@@ -380,7 +380,7 @@ export default function Page() {
                 </div>
               </div>
               <p className="sidebar-footer-text">
-                From quotes to memories — SayFrame helps you express what matters.
+                From quotes to memories — StayFrame helps you express what matters.
               </p>
             </div>
           </div>

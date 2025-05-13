@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sayframe.fyi/</loc>
+    <loc>https://stayframe.fyi/</loc>
     <lastmod>2025-05-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sayframe.fyi/about</loc>
+    <loc>https://stayframe.fyi/about</loc>
     <lastmod>2025-05-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sayframe.fyi/privacy</loc>
+    <loc>https://stayframe.fyi/privacy</loc>
     <lastmod>2025-05-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sayframe.fyi/terms</loc>
+    <loc>https://stayframe.fyi/terms</loc>
     <lastmod>2025-05-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

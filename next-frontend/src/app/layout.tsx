@@ -27,22 +27,22 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
-  title: "SayFrame - Social Post Creator",
+  title: "StayFrame - Social Post Creator",
   description: "Create beautiful social media posts with custom quotes and images for all platforms",
   keywords: ["social media", "post creator", "quotes", "images", "twitter", "instagram", "facebook", "linkedin"],
-  authors: [{ name: "SayFrame Team" }],
+  authors: [{ name: "StayFrame Team" }],
   robots: "index, follow",
   openGraph: {
-    title: "SayFrame - Social Post Creator",
+    title: "StayFrame - Social Post Creator",
     description: "Create beautiful social media posts with custom quotes and images for all platforms",
-    url: "https://sayframe.fyi",
-    siteName: "SayFrame",
+    url: "https://stayframe.fyi",
+    siteName: "StayFrame",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "SayFrame - Social Post Creator",
+        alt: "StayFrame - Social Post Creator",
       },
     ],
     locale: "en_US",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SayFrame - Social Post Creator",
+    title: "StayFrame - Social Post Creator",
     description: "Create beautiful social media posts with custom quotes and images for all platforms",
     images: ["/og-image.jpg"],
   },
@@ -72,7 +72,7 @@ export default function RootLayout({
         <main>{children}</main>
         <footer className="app-footer">
           <div className="footer-content">
-            <p>© {new Date().getFullYear()} SayFrame. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} StayFrame. All rights reserved.</p>
             <p>Create beautiful social media posts in seconds</p>
           </div>
         </footer>

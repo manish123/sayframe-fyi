@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://sayframe.fyi/sitemap.xml
+Sitemap: https://stayframe.fyi/sitemap.xml
