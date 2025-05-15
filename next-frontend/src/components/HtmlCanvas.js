@@ -373,7 +373,8 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
           // Handle background image
           if (imageUrl) {
             try {
-              const img = new Image();
+              // Use the native Image constructor explicitly
+              const img = new window.Image();
               img.crossOrigin = 'anonymous';
               await new Promise((resolve, reject) => {
                 const cacheBuster = `?cb=${Date.now()}`;
@@ -451,23 +452,46 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             ctx.shadowOffsetY = 0;
           }
 
-          // Reset context state and draw watermark
+          // Draw watermark with enhanced prominence
           ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformations
           ctx.globalAlpha = 1; // Reset transparency
-          ctx.font = '13px Arial, sans-serif';
+
+          // Set font and measure the text to calculate background size
+          ctx.font = 'bold 16px Arial, sans-serif'; // Increase font size and make bold
           ctx.textAlign = 'right';
           ctx.textBaseline = 'bottom';
-          ctx.fillStyle = '#333C4D';
-          console.log('[HtmlCanvas] Drawing watermark at position:', { x: width - 14, y: height - 14 });
-          ctx.fillText('powered by stayframe.fyi', width - 14, height - 14);
+          const watermarkText = 'powered by stayframe.fyi';
+          const textMetrics = ctx.measureText(watermarkText);
+          const textWidth = textMetrics.width;
+          const textHeight = 16 * 1.2; // Approximate height based on font size
 
-          // Debug: Append canvas to DOM to inspect
-          document.body.appendChild(canvas);
-          canvas.style.position = 'absolute';
-          canvas.style.top = '0';
-          canvas.style.left = '0';
-          canvas.style.zIndex = '9999';
-          setTimeout(() => document.body.removeChild(canvas), 5000); // Remove after 5 seconds
+          // Draw semi-transparent background
+          const paddingX = 8;
+          const paddingY = 4;
+          const bgX = width - 16 - textWidth - paddingX; // 16px padding from right
+          const bgY = height - 16 - paddingY; // 16px padding from bottom
+          const bgWidth = textWidth + paddingX * 2;
+          const bgHeight = textHeight + paddingY * 2;
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black background
+          ctx.beginPath();
+          ctx.roundRect(bgX, bgY, bgWidth, bgHeight, 4); // Rounded corners
+          ctx.fill();
+
+          // Draw the text
+          ctx.fillStyle = '#ffffff'; // White text for contrast
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          console.log('[HtmlCanvas] Drawing watermark at position:', { x: width - 16, y: height - 16 });
+          ctx.fillText(watermarkText, width - 16, height - 16);
+
+          // Reset shadow
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
 
           const dataURL = canvas.toDataURL('image/png');
           resolve(dataURL);
@@ -965,13 +989,18 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
           
           <div style={{ 
             position: 'absolute', 
-            bottom: '14px', 
-            right: '14px', 
-            fontSize: '13px', 
-            color: '#333C4D', 
-            opacity: 0.85,
+            bottom: '16px', 
+            right: '16px', 
+            fontSize: '16px', 
+            color: '#ffffff', 
+            opacity: 1,
             fontFamily: 'Arial, sans-serif',
-            textShadow: imageUrl ? '0px 0px 2px #fff' : 'none'
+            fontWeight: 'bold', 
+            textShadow: '1px 1px 3px rgba(0,0,0,0.8)', 
+            backgroundColor: 'rgba(0,0,0,0.5)', 
+            padding: '4px 8px', 
+            borderRadius: '4px', 
+            zIndex: 15
           }}>
             powered by stayframe.fyi
           </div>
