@@ -1,18 +1,19 @@
 "use client";
 import React, { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 // Consistent styling for the entire application
 const appStyles = {
   fontFamily: 'Roboto, Arial, sans-serif',
   colors: {
-    primary: '#6366f1',
-    secondary: '#f1f5fd',
-    text: '#333333',
-    lightText: '#666666',
+    primary: '#23d160', // Bulma's green
+    secondary: '#363636', // Bulma's dark
+    text: '#4a4a4a',     // Bulma's text
+    lightText: '#7a7a7a', // Bulma's light text
     white: '#ffffff',
-    black: '#000000',
-    background: '#f8fafc',
-    border: '#e5e7eb'
+    black: '#0a0a0a',     // Bulma's black
+    background: '#f5f5f5', // Bulma's background
+    border: '#dbdbdb'      // Bulma's border
   },
   borderRadius: '4px',
   boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
@@ -381,12 +382,14 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             
             // Wait for the image to load
             await new Promise((resolve, reject) => {
+              const cacheBuster = `?cb=${Date.now()}`;
+              const finalUrl = imageUrl.includes('?')
+                ? `${imageUrl}&crossorigin=anonymous`
+                : `${imageUrl}?crossorigin=anonymous${cacheBuster}`;
+
               img.onload = resolve;
               img.onerror = reject;
-              
-              // Force image reload with crossOrigin
-              const cacheBuster = `?cb=${Date.now()}`;
-              img.src = imageUrl.includes('?') ? `${imageUrl}&crossorigin=anonymous` : `${imageUrl}?crossorigin=anonymous${cacheBuster}`;
+              img.src = finalUrl;
             });
             
             // Calculate position to center the image
@@ -547,6 +550,20 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
   
   const displaySize = getDisplaySize();
   const showPlaceholder = !quoteText && !imageUrl;
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  
+  // Generate preview image when requested
+  const handlePreview = async () => {
+    setShowPreview(true);
+    try {
+      // Use the exportImage function from the imperative handle
+      const dataUrl = await ref.current.exportImage();
+      setPreviewImage(dataUrl);
+    } catch (error) {
+      console.error('[HtmlCanvas] Error generating preview:', error);
+    }
+  };
   
   return (
     <div 
@@ -556,6 +573,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
         borderRadius: '18px', 
         padding: '24px', 
         display: 'flex', 
+        flexDirection: 'column', // Stack elements vertically
         justifyContent: 'center', 
         alignItems: 'center', 
         minHeight: '420px', 
@@ -564,9 +582,122 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
       }}
     >
       <div style={{ position: 'relative' }}>
+        
+        {/* Preview Modal with Bulma styling */}
+        {showPreview && (
+          <div className="modal is-active" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(10, 10, 10, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div className="modal-content" style={{
+              backgroundColor: appStyles.colors.white,
+              borderRadius: '6px',
+              padding: '20px',
+              maxWidth: '90%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 2px 15px rgba(0,0,0,0.4)'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '15px'
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  color: appStyles.colors.text,
+                  fontSize: '18px',
+                  fontWeight: 'bold'
+                }}>
+                  Preview ({canvasSize.width}×{canvasSize.height}px)
+                </h3>
+                <button 
+                  className="delete"
+                  onClick={() => setShowPreview(false)}
+                  aria-label="close"
+                  style={{
+                    background: appStyles.colors.secondary
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div style={{
+                border: `1px solid ${appStyles.colors.border}`,
+                borderRadius: '4px',
+                padding: '10px',
+                marginBottom: '15px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#f0f0f0'
+              }}>
+                {previewImage ? (
+                  <Image 
+                    src={previewImage} 
+                    alt="Preview" 
+                    width={800}
+                    height={600}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '60vh',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    padding: '40px',
+                    color: appStyles.colors.lightText,
+                    textAlign: 'center'
+                  }}>
+                    Generating preview...
+                  </div>
+                )}
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px'
+              }}>
+                <button 
+                  className="button is-light is-small"
+                  onClick={() => setShowPreview(false)}
+                >
+                  Close
+                </button>
+                <button 
+                  className="button is-primary is-small"
+                  onClick={() => {
+                    if (previewImage) {
+                      const link = document.createElement('a');
+                      link.download = `stayframe-${Date.now()}.png`;
+                      link.href = previewImage;
+                      link.click();
+                    }
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Text controls that appear when text is selected */}
         {isTextSelected && quoteText && (
-          <div style={{
+          <div className="box has-shadow" style={{
             position: 'absolute',
             top: '-80px',
             left: '50%',
@@ -576,71 +707,44 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             gap: '8px',
             background: appStyles.colors.white,
             padding: '10px 12px',
-            borderRadius: '8px',
-            boxShadow: appStyles.boxShadow,
+            borderRadius: '6px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
             zIndex: 20,
-            fontFamily: appStyles.fontFamily
+            fontFamily: appStyles.fontFamily,
+            border: `1px solid ${appStyles.colors.border}`
           }}>
             {/* Top row - Font and style controls */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {/* Font family dropdown */}
-              <select 
-                value={fontFamily} 
-                onChange={(e) => changeFontFamily(e.target.value)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: appStyles.borderRadius,
-                  border: `1px solid ${appStyles.colors.border}`,
-                  background: appStyles.colors.white,
-                  color: appStyles.colors.text,
-                  fontSize: appStyles.fontSize.small,
-                  fontFamily: appStyles.fontFamily
-                }}
+              <div className="select is-small" 
                 onMouseEnter={() => handleShowTooltip('Change font')}
                 onMouseLeave={handleHideTooltip}
               >
-                {fonts.map(font => (
-                  <option key={font.value} value={font.value}>{font.name}</option>
-                ))}
-              </select>
+                <select 
+                  value={fontFamily} 
+                  onChange={(e) => changeFontFamily(e.target.value)}
+                >
+                  {fonts.map(font => (
+                    <option key={font.value} value={font.value}>{font.name}</option>
+                  ))}
+                </select>
+              </div>
               
               {/* Style toggles */}
               <button 
+                className={`button is-small ${fontStyle === 'italic' ? 'is-primary' : 'is-dark'}`}
                 onClick={toggleFontStyle}
                 style={{
-                  background: fontStyle === 'italic' ? appStyles.colors.primary : appStyles.colors.secondary,
-                  color: fontStyle === 'italic' ? appStyles.colors.white : appStyles.colors.text,
-                  border: 'none',
-                  borderRadius: appStyles.borderRadius,
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: appStyles.fontSize.small,
-                  fontStyle: 'italic',
-                  fontFamily: appStyles.fontFamily
+                  fontStyle: 'italic'
                 }}
                 onMouseEnter={() => handleShowTooltip('Toggle Italic')}
                 onMouseLeave={handleHideTooltip}
               >I</button>
               <button 
+                className={`button is-small ${fontWeight === 'bold' ? 'is-primary' : 'is-dark'}`}
                 onClick={toggleFontWeight}
                 style={{
-                  background: fontWeight === 'bold' ? appStyles.colors.primary : appStyles.colors.secondary,
-                  color: fontWeight === 'bold' ? appStyles.colors.white : appStyles.colors.text,
-                  border: 'none',
-                  borderRadius: appStyles.borderRadius,
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: appStyles.fontSize.small,
-                  fontWeight: 'bold',
-                  fontFamily: appStyles.fontFamily
+                  fontWeight: 'bold'
                 }}
                 onMouseEnter={() => handleShowTooltip('Toggle Bold')}
                 onMouseLeave={handleHideTooltip}
@@ -651,103 +755,49 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {/* Text size controls */}
               <button 
+                className="button is-dark is-small"
                 onClick={() => setTextSize(prev => Math.max(16, prev - 2))}
-                style={{
-                  background: appStyles.colors.secondary,
-                  color: appStyles.colors.text,
-                  border: 'none',
-                  borderRadius: appStyles.borderRadius,
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: appStyles.fontSize.medium,
-                  fontWeight: 'bold',
-                  fontFamily: appStyles.fontFamily
-                }}
                 onMouseEnter={() => handleShowTooltip('Decrease Size')}
                 onMouseLeave={handleHideTooltip}
-              >-</button>
+              >
+                <span className="icon is-small">-</span>
+              </button>
               <div style={{ fontSize: appStyles.fontSize.small, display: 'flex', alignItems: 'center', minWidth: '36px', justifyContent: 'center', fontFamily: appStyles.fontFamily, color: appStyles.colors.text }}>{textSize}px</div>
               <button 
+                className="button is-dark is-small"
                 onClick={() => setTextSize(prev => Math.min(72, prev + 2))}
-                style={{
-                  background: appStyles.colors.secondary,
-                  color: appStyles.colors.text,
-                  border: 'none',
-                  borderRadius: appStyles.borderRadius,
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: appStyles.fontSize.medium,
-                  fontWeight: 'bold',
-                  fontFamily: appStyles.fontFamily
-                }}
                 onMouseEnter={() => handleShowTooltip('Increase Size')}
                 onMouseLeave={handleHideTooltip}
-              >+</button>
+              >
+                <span className="icon is-small">+</span>
+              </button>
               
               {/* Text alignment controls */}
               <div style={{ width: '1px', background: '#e5e7eb', margin: '0 4px' }} />
               <button 
+                className={`button is-small ${textAlignment === 'left' ? 'is-primary' : 'is-dark'}`}
                 onClick={() => changeTextAlignment('left')}
-                style={{
-                  background: textAlignment === 'left' ? '#6366f1' : '#f1f5fd',
-                  color: textAlignment === 'left' ? 'white' : 'black',
-                  border: 'none',
-                  borderRadius: '4px',
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
                 onMouseEnter={() => handleShowTooltip('Align Left')}
                 onMouseLeave={handleHideTooltip}
-              >L</button>
+              >
+                <span className="icon is-small">L</span>
+              </button>
               <button 
+                className={`button is-small ${textAlignment === 'center' ? 'is-primary' : 'is-dark'}`}
                 onClick={() => changeTextAlignment('center')}
-                style={{
-                  background: textAlignment === 'center' ? '#6366f1' : '#f1f5fd',
-                  color: textAlignment === 'center' ? 'white' : 'black',
-                  border: 'none',
-                  borderRadius: '4px',
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
                 onMouseEnter={() => handleShowTooltip('Align Center')}
                 onMouseLeave={handleHideTooltip}
-              >C</button>
+              >
+                <span className="icon is-small">C</span>
+              </button>
               <button 
+                className={`button is-small ${textAlignment === 'right' ? 'is-primary' : 'is-dark'}`}
                 onClick={() => changeTextAlignment('right')}
-                style={{
-                  background: textAlignment === 'right' ? '#6366f1' : '#f1f5fd',
-                  color: textAlignment === 'right' ? 'white' : 'black',
-                  border: 'none',
-                  borderRadius: '4px',
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
                 onMouseEnter={() => handleShowTooltip('Align Right')}
                 onMouseLeave={handleHideTooltip}
-              >R</button>
+              >
+                <span className="icon is-small">R</span>
+              </button>
               
               {/* Color picker */}
               <div style={{ width: '1px', background: '#e5e7eb', margin: '0 4px' }} />
@@ -808,7 +858,18 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
           onClick={handleCanvasClick}
         >
           {imageUrl && (
-            <div className="background-image" style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}>
+            <div className="background-image" style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+              backgroundColor: 'transparent'
+            }}>
               {isImageLoading && (
                 <div style={{ 
                   position: 'absolute', 
@@ -822,16 +883,17 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                 </div>
               )}
               {/* Use regular img tag for better compatibility with canvas export */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={imageUrl} 
                 alt="Background" 
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 style={{ 
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  backgroundColor: 'transparent',
                   filter: 'brightness(0.9)' // Slightly darken for better text visibility
                 }} 
               />
@@ -915,6 +977,38 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
             powered by stayframe.fyi
           </div>
         </div>
+
+        {/* Place the Preview button below the canvas */}
+        <div style={{
+          position: 'absolute',
+          top: `${displaySize.height + 10}px`, // Position just below the canvas (height + 10px gap)
+          left: '50%',
+          transform: 'translateX(-50%)', // Center horizontally
+          zIndex: 20,
+        }}>
+          <button 
+            className="button is-primary is-small"
+            onClick={handlePreview}
+            style={{
+              padding: '5px 10px',
+              fontSize: '14px',
+            }}
+          >
+            <span className="icon is-small">
+              👁️
+            </span>
+            <span>Preview</span>
+          </button>
+        </div>
+
+        <style jsx>{`
+          @media (max-width: 768px) {
+            .button.is-primary.is-small {
+              padding: 4px 8px !important;
+              font-size: 12px !important;
+            }
+          }
+        `}</style>
         
         {showPlaceholder && (
           <div style={{

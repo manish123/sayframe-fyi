@@ -45,6 +45,14 @@ export async function GET(req: NextRequest) {
     if (theme) {
       quotes = quotes.filter(q => q.theme === theme);
     }
+    
+    // Randomize the quotes order to show different results each time
+    // Fisher-Yates (Knuth) shuffle algorithm
+    for (let i = quotes.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [quotes[i], quotes[j]] = [quotes[j], quotes[i]];
+    }
+    
     const total = quotes.length;
     const start = (page - 1) * limit;
     const paginated = quotes.slice(start, start + limit);

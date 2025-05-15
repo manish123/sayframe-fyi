@@ -6,6 +6,7 @@ import Image from 'next/image';
 export const ImageSearch = ({ searchTerm, onSearch, images, onImageSelect }) => {
   const [inputValue, setInputValue] = useState(searchTerm || '');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     console.log('[ImageSearch] searchTerm changed:', searchTerm);
@@ -36,46 +37,130 @@ export const ImageSearch = ({ searchTerm, onSearch, images, onImageSelect }) => 
       onImageSelect(image);
     }
   };
+  
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check if file is an image
+    if (!file.type.match('image.*')) {
+      alert('Please select an image file (JPEG, PNG, etc.).');
+      return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size too large. Please select an image under 5MB.');
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    // Create a local URL for the image
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const uploadedImage = {
+        id: 'uploaded-' + Date.now(),
+        urls: {
+          regular: event.target.result
+        },
+        alt_description: file.name,
+        user: {
+          name: 'You (Local Upload)'
+        },
+        isLocalUpload: true
+      };
+      
+      // Select the uploaded image
+      handleImageSelect(uploadedImage);
+      setIsUploading(false);
+    };
+    
+    reader.onerror = () => {
+      alert('Error reading file. Please try again.');
+      setIsUploading(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="form-group">
-      <h3 className="feature-title"><span style={{ fontSize: '16px' }}>🔍</span> Search Images & Select One</h3>
-      <p className="mobile-instruction">Type a keyword and tap search to find background images</p>
+      <h3 className="feature-title">
+        <span style={{ color: 'var(--primary)' }}>🔍</span>
+        <span>Search Images & Select One</span>
+      </h3>
       
-      <form 
-        onSubmit={handleSearch}
-        style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '16px'
-        }}
-      >
-        <div style={{ flex: 1, position: 'relative' }}>
-          <input
-            type="text"
-            className="form-control"
-            value={inputValue}
-            onChange={handleInputChange}
-            placeholder="Enter search term..."
-          />
-        </div>
-        
-        <button 
-          type="submit"
-          className="btn btn-primary"
-          disabled={!inputValue || inputValue === searchTerm}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <form 
+          onSubmit={handleSearch}
+          style={{
+            display: 'flex',
+            gap: '8px',
+            flex: 1
+          }}
         >
-          Search
-        </button>
-      </form>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input
+              type="text"
+              className="form-control"
+              value={inputValue}
+              onChange={handleInputChange}
+              placeholder="Enter search term..."
+              style={{
+                backgroundColor: 'var(--dark-bg-light)',
+                color: 'var(--light-text)',
+                border: '1px solid var(--dark-bg)',
+                borderRadius: '4px',
+                padding: '0.5rem 0.75rem',
+                fontSize: 'var(--text-sm)',
+                width: '100%',
+                outline: 'none'
+              }}
+            />
+          </div>
+          
+          <button 
+            type="submit"
+            className={`button is-primary is-small ${(!inputValue || inputValue === searchTerm) ? 'is-disabled' : ''}`}
+            disabled={!inputValue || inputValue === searchTerm}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-search"></i>
+            </span>
+            <span>Search</span>
+          </button>
+        </form>
+        
+        {/* Upload Image Button */}
+        <div>
+          <input
+            type="file"
+            id="image-upload"
+            accept="image/*"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
+          <label 
+            htmlFor="image-upload"
+            className={`button is-primary is-small ${isUploading ? 'is-loading' : ''}`}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-upload"></i>
+            </span>
+            <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+          </label>
+        </div>
+      </div>
       
       <div style={{ 
-        background: '#ffffff', 
-        borderRadius: '8px', 
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)', 
+        background: 'var(--dark-bg-light)', 
+        borderRadius: '6px', 
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', 
         padding: '16px', 
         marginBottom: '16px',
-        border: '1px solid #e5e7eb'
+        border: '1px solid var(--dark-bg)'
       }}>
         <div style={{ 
           display: 'grid',
@@ -92,8 +177,8 @@ export const ImageSearch = ({ searchTerm, onSearch, images, onImageSelect }) => 
                     paddingBottom: '100%', // 1:1 aspect ratio
                     overflow: 'hidden',
                     borderRadius: '6px',
-                    boxShadow: image === selectedImage ? '0 4px 12px rgba(79, 70, 229, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                    border: image === selectedImage ? '2px solid #4f46e5' : '1px solid #e5e7eb',
+                    boxShadow: image === selectedImage ? '0 4px 12px rgba(26, 188, 156, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.2)',
+                    border: image === selectedImage ? '2px solid var(--primary)' : '1px solid var(--dark-bg)',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
                   }}

@@ -78,7 +78,10 @@ export const QuoteTabs = ({ theme, onQuoteSelect, setSelectedImage }) => {
 
   return (
     <div className="form-group">
-      <h3 className="feature-title"><span style={{ fontSize: '16px' }}>💬</span> Select a Quote</h3>
+      <h3 className="feature-title">
+        <span style={{ color: 'var(--primary)' }}>💬</span>
+        <span>Select a Quote</span>
+      </h3>
       
       <div className="quote-list-container">
         {loading && (
@@ -116,7 +119,16 @@ export const QuoteTabs = ({ theme, onQuoteSelect, setSelectedImage }) => {
             className="btn btn-primary"
             style={{
               margin: '8px auto 12px',
-              display: 'block'
+              display: 'block',
+              backgroundColor: 'var(--primary)',
+              color: 'var(--dark-bg)',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.5rem 1rem',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
             Load More Quotes

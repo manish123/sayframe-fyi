@@ -1,33 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StayFrame Social Post Creator
+
+A modern web application for creating beautiful social media posts with customizable text overlays on images. Built with Next.js and Bulma CSS framework.
+
+## Features
+
+- Image upload and search functionality
+- Text overlay with customizable fonts, sizes, colors, and styles
+- Text positioning and alignment controls
+- Export to PNG image format
+- Copy to clipboard functionality
+- Preview mode for reviewing posts before export
+- Mobile-responsive design
+- Multi-line text support
+
+## Technology Stack
+
+- **Frontend Framework**: Next.js
+- **CSS Framework**: Bulma
+- **Image Handling**: HTML Canvas for rendering and export
+- **State Management**: React Hooks
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/components/` - React components including HtmlCanvas for the main editor
+- `src/app/` - Next.js pages and routing
+- `public/` - Static assets
 
-## Learn More
+## Subscription Tiers
 
-To learn more about Next.js, take a look at the following resources:
+StayFrame offers different subscription tiers:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Free Tier**: Basic image+quote overlay with limited features
+- **Pro Tier**: Multiple text boxes, custom fonts, templates, and export options
+- **Agency Tier**: Team collaboration, client management, and advanced features
 
 ## Deploy on Vercel
 

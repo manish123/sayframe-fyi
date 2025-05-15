@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "../styles/app-styles.css";
-import '../styles/mobile-simple.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -74,12 +73,8 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable}`}>
         <main>{children}</main>
-        <footer className="app-footer">
-          <div className="footer-content">
-            <p>© {new Date().getFullYear()} StayFrame. All rights reserved.</p>
-            <p>Create beautiful social media posts in seconds</p>
-          </div>
-        </footer>
+        
+        {/* Footer moved to page.js for better styling control */}
         
         {/* Add mobile handler script */}
         <Analytics />
