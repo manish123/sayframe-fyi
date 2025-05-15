@@ -77,6 +77,9 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
   const [fontStyle, setFontStyle] = useState('italic');
   const [fontWeight, setFontWeight] = useState('bold');
   const [showTooltip, setShowTooltip] = useState('');
+  const [isTextWrapEnabled, setIsTextWrapEnabled] = useState(true); // Default to wrapping
+  const [textBoxWidth, setTextBoxWidth] = useState(80); // Width as percentage of canvas
+  const [isWidthResizing, setIsWidthResizing] = useState(false); // For width resizing
   const textRef = useRef(null);
   
   // Available fonts - using consistent typography
@@ -186,6 +189,10 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
       setIsResizing(true);
       return;
     }
+    if (target.classList.contains('width-resize-handle')) {
+      setIsWidthResizing(true);
+      return;
+    }
     
     // Otherwise start dragging
     setIsDragging(true);
@@ -206,52 +213,55 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
   const handleMouseMove = (e) => {
     if (!canvasRef.current) return;
     
+    const rect = canvasRef.current.getBoundingClientRect();
+    const canvasWidth = rect.width;
+    const mouseX = e.clientX - rect.left;
+    
     if (isDragging) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const canvasWidth = rect.width;
-      const canvasHeight = rect.height;
-      
-      const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
       
+      // Calculate delta from last position
       const deltaX = mouseX - dragStart.x;
       const deltaY = mouseY - dragStart.y;
       
-      // Calculate new position in percentage
-      const newX = textPosition.x + (deltaX / canvasWidth) * 100;
-      const newY = textPosition.y + (deltaY / canvasHeight) * 100;
+      // Convert pixel movement to percentage of canvas
+      const percentX = (deltaX / rect.width) * 100;
+      const percentY = (deltaY / rect.height) * 100;
       
-      // Clamp values to keep text within canvas
-      const clampedX = Math.max(10, Math.min(90, newX));
-      const clampedY = Math.max(10, Math.min(90, newY));
+      // Update position with constraints to keep within canvas
+      const newX = Math.max(10, Math.min(90, textPosition.x + percentX));
+      const newY = Math.max(10, Math.min(90, textPosition.y + percentY));
       
-      setTextPosition({ x: clampedX, y: clampedY });
-      setDragStart({
-        x: mouseX,
-        y: mouseY
-      });
+      setTextPosition({ x: newX, y: newY });
+      setDragStart({ x: mouseX, y: mouseY });
     } else if (isResizing) {
-      // Handle resizing with smoother control
-      const rect = canvasRef.current.getBoundingClientRect();
       const mouseY = e.clientY - rect.top;
       
-      // Calculate new font size based on mouse position
-      const canvasHeight = rect.height;
-      const relativeY = 1 - (mouseY / canvasHeight); // Invert so dragging up increases size
-      
-      // Map relative position to font size (16px to 72px) with easing
+      // Calculate size based on vertical position
+      // Higher on canvas = larger text
+      const relativeY = 1 - (mouseY / rect.height);
       const minSize = 16;
       const maxSize = 72;
       const range = maxSize - minSize;
-      const newSize = minSize + (range * Math.pow(relativeY, 1.5)); // Apply easing
       
-      setTextSize(Math.round(newSize));
+      // Non-linear scaling for better control
+      const newSize = minSize + (range * Math.pow(relativeY, 1.5));
+      
+      // Round to nearest integer and apply
+      setTextSize(Math.round(Math.max(minSize, Math.min(maxSize, newSize))));
+    } else if (isWidthResizing) {
+      const deltaX = mouseX - dragStart.x;
+      const newWidth = textBoxWidth + (deltaX / canvasWidth) * 100;
+      const clampedWidth = Math.max(20, Math.min(90, newWidth)); // Limit width
+      setTextBoxWidth(clampedWidth);
+      setDragStart({ x: mouseX, y: dragStart.y });
     }
   };
   
   const handleMouseUp = () => {
     setIsDragging(false);
     setIsResizing(false);
+    setIsWidthResizing(false);
   };
   
   // Handle text alignment change
@@ -287,6 +297,32 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
   // Hide tooltip
   const handleHideTooltip = () => {
     setShowTooltip('');
+  };
+  
+  // Text wrapping utility function
+  const wrapText = (ctx, text, maxWidth, fontSize, fontFamily, fontStyle, fontWeight) => {
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    const lines = [];
+    const words = text.split(' ');
+    let currentLine = '';
+    
+    words.forEach((word, index) => {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+      
+      if (index === words.length - 1) {
+        lines.push(currentLine);
+      }
+    });
+    
+    return lines;
   };
   
   // Add and remove event listeners
@@ -435,9 +471,16 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
 
             const textX = width * (textPosition.x / 100);
             const textY = height * (textPosition.y / 100);
-
-            const lines = quoteText.split('\n');
+            const maxTextWidth = width * (textBoxWidth / 100);
             const lineHeight = textSize * 1.2;
+
+            let lines;
+            if (isTextWrapEnabled) {
+              lines = wrapText(ctx, quoteText, maxTextWidth, textSize, fontFamily, fontStyle, fontWeight);
+            } else {
+              lines = quoteText.split('\n');
+            }
+
             const totalTextHeight = lines.length * lineHeight;
             const startY = textY - (totalTextHeight / 2);
 
@@ -575,6 +618,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
   const showPlaceholder = !quoteText && !imageUrl;
   const [showPreview, setShowPreview] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [downloadConfirmation, setDownloadConfirmation] = useState('');
   
   // Generate preview image when requested
   const handlePreview = async () => {
@@ -708,10 +752,33 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                       link.download = `stayframe-${Date.now()}.png`;
                       link.href = previewImage;
                       link.click();
+                      
+                      // Show witty confirmation message
+                      const messages = [
+                        "Your masterpiece is now free in the wild! 🚀",
+                        "Download complete! Your feed will thank you. ✨",
+                        "Image saved! One step closer to social media fame. 🌟",
+                        "Downloaded! Ready to make your followers jealous? 😎",
+                        "Captured for posterity! Your content game just leveled up. 🏆"
+                      ];
+                      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                      setDownloadConfirmation(randomMessage);
+                      
+                      // Clear the confirmation after 3 seconds
+                      setTimeout(() => {
+                        setDownloadConfirmation('');
+                      }, 3000);
                     }
                   }}
                 >
-                  Download
+                  {downloadConfirmation ? (
+                    <span className="has-text-success">
+                      <span style={{ marginRight: '6px' }}>✓</span>
+                      {downloadConfirmation}
+                    </span>
+                  ) : (
+                    'Download'
+                  )}
                 </button>
               </div>
             </div>
@@ -722,7 +789,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
         {isTextSelected && quoteText && (
           <div className="box has-shadow" style={{
             position: 'absolute',
-            top: '-80px',
+            top: '-100px', // Adjusted for extra controls
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
@@ -772,6 +839,21 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                 onMouseEnter={() => handleShowTooltip('Toggle Bold')}
                 onMouseLeave={handleHideTooltip}
               >B</button>
+            </div>
+            
+            {/* Text wrap checkbox */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label className="checkbox" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input
+                  type="checkbox"
+                  checked={isTextWrapEnabled}
+                  onChange={() => setIsTextWrapEnabled(prev => !prev)}
+                  style={{ marginRight: '4px' }}
+                />
+                <span style={{ fontSize: appStyles.fontSize.small, color: appStyles.colors.text }}>
+                  Wrap Text
+                </span>
+              </label>
             </div>
             
             {/* Second row - Size, alignment, and color */}
@@ -939,7 +1021,7 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                 top: `${textPosition.y}%`, 
                 left: `${textPosition.x}%`, 
                 transform: 'translate(-50%, -50%)', 
-                width: '80%',
+                width: `${textBoxWidth}%`, // Use dynamic width
                 padding: '20px',
                 textAlign: textAlignment,
                 color: textColor,
@@ -954,35 +1036,71 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
                 border: isTextSelected ? '1px dashed rgba(255,255,255,0.7)' : 'none',
                 borderRadius: '8px',
                 background: isTextSelected ? 'rgba(0,0,0,0.1)' : 'transparent',
-                transition: 'background 0.2s, border 0.2s'
+                transition: 'background 0.2s, border 0.2s, width 0.2s',
+                whiteSpace: isTextWrapEnabled ? 'pre-wrap' : 'nowrap' // Enable wrapping
               }}
               onMouseDown={handleTextClick}
             >
               {quoteText}
               {isTextSelected && (
-                <div 
-                  className="resize-handle"
-                  style={{
-                    position: 'absolute',
-                    bottom: '-10px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '30px',
-                    height: '10px',
-                    background: 'rgba(255,255,255,0.7)',
-                    borderRadius: '0 0 4px 4px',
-                    cursor: 'ns-resize',
-                    zIndex: 11
-                  }}
-                >
-                  <div style={{
-                    width: '20px',
-                    height: '2px',
-                    background: '#6366f1',
-                    margin: '4px auto',
-                    borderRadius: '2px'
-                  }} />
-                </div>
+                <>
+                  {/* Font size resize handle */}
+                  <div 
+                    className="resize-handle"
+                    style={{
+                      position: 'absolute',
+                      bottom: '-10px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '30px',
+                      height: '10px',
+                      background: 'rgba(255,255,255,0.7)',
+                      borderRadius: '0 0 4px 4px',
+                      cursor: 'ns-resize',
+                      zIndex: 11
+                    }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '2px',
+                      background: '#6366f1',
+                      margin: '4px auto',
+                      borderRadius: '2px'
+                    }} />
+                  </div>
+                  {/* Width resize handle */}
+                  <div 
+                    className="width-resize-handle"
+                    style={{
+                      position: 'absolute',
+                      right: '-10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '10px',
+                      height: '30px',
+                      background: 'rgba(255,255,255,0.7)',
+                      borderRadius: '0 4px 4px 0',
+                      cursor: 'ew-resize',
+                      zIndex: 11
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setIsWidthResizing(true);
+                      setDragStart({
+                        x: e.clientX,
+                        y: e.clientY
+                      });
+                    }}
+                  >
+                    <div style={{
+                      width: '2px',
+                      height: '20px',
+                      background: '#6366f1',
+                      margin: 'auto 4px',
+                      borderRadius: '2px'
+                    }} />
+                  </div>
+                </>
               )}
             </div>
           )}
