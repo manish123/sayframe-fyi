@@ -354,129 +354,128 @@ const FabricCanvasComponent = forwardRef(({ quote, images = [], aspectRatio = 'i
     },
     exportImage: async () => {
       if (!canvasRef.current) return Promise.resolve('');
-      
-      return new Promise(async (resolve, reject) => {
-      
-      try {
-        // Create a new canvas element for export
-        // Use document.createElement explicitly to avoid minification issues
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const { width, height } = canvasSize;
-        
-        // Set canvas dimensions
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw white background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Handle background image with CORS-safe approach
-        if (imageUrl) {
-          try {
-            // Create a new image with crossOrigin set
-            // Use window.Image explicitly to avoid minification issues
-            const img = new (window.Image || Image)();
-            img.crossOrigin = 'anonymous';
-            
-            // Wait for the image to load
-            await new Promise((resolve, reject) => {
-              const cacheBuster = `?cb=${Date.now()}`;
-              const finalUrl = imageUrl.includes('?')
-                ? `${imageUrl}&crossorigin=anonymous`
-                : `${imageUrl}?crossorigin=anonymous${cacheBuster}`;
 
-              img.onload = resolve;
-              img.onerror = reject;
-              img.src = finalUrl;
-            });
-            
-            // Calculate position to center the image
-            const imgRatio = img.width / img.height;
-            const canvasRatio = width / height;
-            let drawWidth, drawHeight, drawX, drawY;
-            
-            if (imgRatio > canvasRatio) {
-              drawHeight = height;
-              drawWidth = height * imgRatio;
-              drawX = (width - drawWidth) / 2;
-              drawY = 0;
-            } else {
-              drawWidth = width;
-              drawHeight = width / imgRatio;
-              drawX = 0;
-              drawY = (height - drawHeight) / 2;
+      return new Promise(async (resolve, reject) => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const { width, height } = canvasSize;
+
+          canvas.width = width;
+          canvas.height = height;
+
+          console.log('[HtmlCanvas] Canvas dimensions:', { width: canvas.width, height: canvas.height, canvasSize });
+
+          // Draw white background
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, width, height);
+
+          // Handle background image
+          if (imageUrl) {
+            try {
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              await new Promise((resolve, reject) => {
+                const cacheBuster = `?cb=${Date.now()}`;
+                const finalUrl = imageUrl.includes('?')
+                  ? `${imageUrl}&crossorigin=anonymous`
+                  : `${imageUrl}?crossorigin=anonymous${cacheBuster}`;
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = finalUrl;
+              });
+
+              const imgRatio = img.width / img.height;
+              const canvasRatio = width / height;
+              let drawWidth, drawHeight, drawX, drawY;
+
+              if (imgRatio > canvasRatio) {
+                drawHeight = height;
+                drawWidth = height * imgRatio;
+                drawX = (width - drawWidth) / 2;
+                drawY = 0;
+              } else {
+                drawWidth = width;
+                drawHeight = width / imgRatio;
+                drawX = 0;
+                drawY = (height - drawHeight) / 2;
+              }
+
+              ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+              // Add a slight darkening overlay for better text visibility
+              ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+              ctx.fillRect(0, 0, width, height);
+            } catch (imgError) {
+              console.error('[HtmlCanvas] Error loading image for export:', imgError);
             }
-            
-            // Draw the image
-            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-            
-            // Add a slight darkening overlay for better text visibility
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.fillRect(0, 0, width, height);
-          } catch (imgError) {
-            console.error('[HtmlCanvas] Error loading image for export:', imgError);
-            // Continue without the image if it fails to load
           }
-        }
-        
-        // Draw quote text
-        if (quoteText) {
-          ctx.font = `${fontStyle} ${fontWeight} ${textSize}px ${fontFamily}`;
-          ctx.textAlign = textAlignment;
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = textColor;
-          
-          // Add text shadow
-          const shadowParts = textShadow.match(/([0-9]+px) ([0-9]+px) ([0-9]+px) (rgba?\([^)]+\))/i);
-          if (shadowParts) {
-            ctx.shadowOffsetX = parseInt(shadowParts[1]);
-            ctx.shadowOffsetY = parseInt(shadowParts[2]);
-            ctx.shadowBlur = parseInt(shadowParts[3]);
-            ctx.shadowColor = shadowParts[4];
-          } else {
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 5;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
+
+          // Draw quote text
+          if (quoteText) {
+            ctx.font = `${fontStyle} ${fontWeight} ${textSize}px ${fontFamily}`;
+            ctx.textAlign = textAlignment;
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = textColor;
+
+            // Add text shadow
+            const shadowParts = textShadow.match(/([0-9]+px) ([0-9]+px) ([0-9]+px) (rgba?\([^)]+\))/i);
+            if (shadowParts) {
+              ctx.shadowOffsetX = parseInt(shadowParts[1]);
+              ctx.shadowOffsetY = parseInt(shadowParts[2]);
+              ctx.shadowBlur = parseInt(shadowParts[3]);
+              ctx.shadowColor = shadowParts[4];
+            } else {
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+              ctx.shadowBlur = 5;
+              ctx.shadowOffsetX = 2;
+              ctx.shadowOffsetY = 2;
+            }
+
+            const textX = width * (textPosition.x / 100);
+            const textY = height * (textPosition.y / 100);
+
+            const lines = quoteText.split('\n');
+            const lineHeight = textSize * 1.2;
+            const totalTextHeight = lines.length * lineHeight;
+            const startY = textY - (totalTextHeight / 2);
+
+            lines.forEach((line, index) => {
+              ctx.fillText(line, textX, startY + index * lineHeight + lineHeight / 2);
+            });
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
           }
-          
-          // Calculate position based on percentages
-          const textX = width * (textPosition.x / 100);
-          const textY = height * (textPosition.y / 100);
-          
-          // Split text into lines and draw each line
-          const lines = quoteText.split('\n');
-          const lineHeight = textSize * 1.2; // Adjust line height based on font size
-          const totalTextHeight = lines.length * lineHeight;
-          const startY = textY - (totalTextHeight / 2);
-          
-          lines.forEach((line, index) => {
-            ctx.fillText(line, textX, startY + index * lineHeight + lineHeight / 2);
-          });
-          
-          // Reset shadow
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
+
+          // Reset context state and draw watermark
+          ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transformations
+          ctx.globalAlpha = 1; // Reset transparency
+          ctx.font = '13px Arial, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillStyle = '#333C4D';
+          console.log('[HtmlCanvas] Drawing watermark at position:', { x: width - 14, y: height - 14 });
+          ctx.fillText('powered by stayframe.fyi', width - 14, height - 14);
+
+          // Debug: Append canvas to DOM to inspect
+          document.body.appendChild(canvas);
+          canvas.style.position = 'absolute';
+          canvas.style.top = '0';
+          canvas.style.left = '0';
+          canvas.style.zIndex = '9999';
+          setTimeout(() => document.body.removeChild(canvas), 5000); // Remove after 5 seconds
+
+          const dataURL = canvas.toDataURL('image/png');
+          resolve(dataURL);
+        } catch (error) {
+          console.error('[HtmlCanvas] Error exporting image:', error);
+          reject(error);
         }
-        
-        // Add watermark
-        ctx.font = '13px Arial, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillStyle = '#333C4D';
-        ctx.fillText('powered by stayframe.fyi', width - 14, height - 14);
-        
-        const dataURL = canvas.toDataURL('image/png');
-        resolve(dataURL);
-      } catch (error) {
-        console.error('[HtmlCanvas] Error exporting image:', error);
-        reject(error);
-      }
-    });
+      });
     },
     copyToClipboard: async () => {
       return new Promise(async (resolve, reject) => {
